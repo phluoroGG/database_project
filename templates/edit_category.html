@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование категории новостей</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    <form method="post">
+        {{ form.category_name.label }}
+        {{ form.category_name }}
+        {% if form.category_name.errors %}
+        {{ form.category_name.errors }}
+        {% endif %}
+        {{ form.button_save }}
+    </form>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

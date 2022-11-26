@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Список оказанных услуг</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    <h1>Список оказанных услуг</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Номер услуги</th>
+                <th>Пациент</th>
+                <th>Доктор</th>
+                <th>Услуга</th>
+                <th>Дата проведения</th>
+                <th>Стоимость</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in services %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('edit_service', id=s.id) }}">{{ s.id }}</a>
+                </td>
+                {% if s.patient_id %}
+                <td>
+                    <a href="{{ url_for('edit_patient', id=s.patient_id) }}">{{ s.patient_id }}</a>
+                </td>
+                {% else %}
+                <td> - </td>
+                {% endif %}
+                {% if s.doctor_id %}
+                <td>
+                    <a href="{{ url_for('edit_doctor', id=s.doctor_id) }}">{{ s.doctor_id }}</a>
+                </td>
+                {% else %}
+                <td> - </td>
+                {% endif %}
+                {% if s.service_id %}
+                <td>
+                    <a href="{{ url_for('edit_price_list', id=s.service_id) }}">{{ s.service_id }}</a>
+                </td>
+                {% else %}
+                <td> - </td>
+                {% endif %}
+                <td>
+                    {{ s.service_date }}
+                </td>
+                <td>
+                    {{ s.cost }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

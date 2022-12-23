@@ -4,19 +4,19 @@
     <title>Вход</title>
 </head>
 <body>
-    {% include '_menu.html' %}
-    <h4>Вход в систему</h4>
-    <form method="post">
-        <label>Логин:</label>
-        <input type="text" name="login" required/>
-        <label>Пароль:</label>
-        <input type="password" name="password" required/>
-        <input type="submit" name="cmd" value="Вход"/>
-    </form>
-    {% if feedback %}
-    <p>
-        {{ feedback }}
-    </p>
-    {% endif %}
+{% include '_menu.html' %}
+<h4>Вход в систему</h4>
+<form method="post">
+    <label>Логин:</label>
+    <input type="text" name="login" required/>
+    <label>Пароль:</label>
+    <input type="password" name="password" required/>
+    <input type="submit" name="cmd" value="Вход"/>
+</form>
+{% if feedback %}
+<p>
+    {{ feedback }}
+</p>
+{% endif %}
 </body>
 </html>

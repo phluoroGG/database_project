@@ -4,11 +4,13 @@ from forms import *
 
 from datetime import datetime
 
-from flask import request, render_template, redirect, url_for, flash
+from flask import request, render_template, redirect, url_for
 
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 
-from sqlalchemy import desc, func, extract
+from sqlalchemy import func, extract
+
+per_page = 20
 
 # flask-login
 login_manager = LoginManager()
@@ -22,10 +24,10 @@ def login():
     feedback = ''
     if request.method == 'POST':
         if request.form['cmd'] == 'Вход':
-            u = db.session.query(User). \
-                filter(User.user_login == request.form['login']). \
-                filter(User.user_password == request.form['password']). \
-                one_or_none()
+            u = db.session.query(User) \
+                .filter(User.user_login == request.form['login']) \
+                .filter(User.user_password == request.form['password']) \
+                .one_or_none()
             if u is None:
                 feedback = "Неверное имя пользователя или пароль"
             else:
@@ -49,17 +51,8 @@ def logout():
 
 @app.route('/')
 def index():
-    service_count = db.session.query(RenderedService.id, func.count(RenderedService.id)). \
-        filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
-               == datetime.now().year * 12 + datetime.now().month - 1).all()[0][1]
-    sum_cost = db.session.query(RenderedService.id, func.sum(RenderedService.cost)). \
-        filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
-               == datetime.now().year * 12 + datetime.now().month - 1).all()[0][1]
-
     return render_template(
-        'index.html',
-        service_count=service_count,
-        sum_cost=sum_cost
+        'index.html'
     )
 
 
@@ -114,14 +107,41 @@ def price_list():
     )
 
 
-@app.route('/service_list')
+@app.route('/service_list', methods=['GET', 'POST'])
 @login_required
 def service_list():
-    services = db.session.query(RenderedService).order_by(RenderedService.id).all()
+    global per_page
+    per_page = int(request.form.get("items", per_page))
+    page = db.paginate(db.session.query(RenderedService).order_by(RenderedService.id), per_page=per_page)
+
+    date = request.form.get("date")
+    if date is None:
+        if datetime.now().month == 1:
+            year = datetime.now().year - 1
+            month = 12
+        else:
+            year = datetime.now().year
+            month = datetime.now().month - 1
+    else:
+        datestr = date.split("-")
+        year = int(datestr[0])
+        month = int(datestr[1])
+    service_count = db.session.query(RenderedService.id, func.count(RenderedService.id)) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    sum_cost = db.session.query(RenderedService.id, func.sum(RenderedService.cost)) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    if month < 10:
+        month = "0" + str(month)
+    date = str(year) + "-" + str(month)
 
     return render_template(
         "service_list.html",
-        services=services
+        page=page,
+        date=date,
+        service_count=service_count,
+        sum_cost=sum_cost
     )
 
 
@@ -133,6 +153,35 @@ def edit_department(id):
         d = db.session.query(Department).filter(Department.id == id).one_or_none()
         if d is None:
             return 'Not Found', 404
+
+    global per_page
+    per_page = int(request.form.get("items", per_page))
+    page = db.paginate(db.session.query(RenderedService).join(Doctor, RenderedService.doctor_id == Doctor.id)
+                       .filter(Doctor.department_id == id).order_by(RenderedService.id), per_page=per_page)
+
+    date = request.form.get("date")
+    if date is None:
+        if datetime.now().month == 1:
+            year = datetime.now().year - 1
+            month = 12
+        else:
+            year = datetime.now().year
+            month = datetime.now().month - 1
+    else:
+        datestr = date.split("-")
+        year = int(datestr[0])
+        month = int(datestr[1])
+    service_count = db.session.query(RenderedService.id, func.count(RenderedService.id)) \
+        .filter(RenderedService.doctor_id == Doctor.id).filter(Doctor.department_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    sum_cost = db.session.query(RenderedService.id, func.sum(RenderedService.cost)) \
+        .filter(RenderedService.doctor_id == Doctor.id).filter(Doctor.department_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    if month < 10:
+        month = "0" + str(month)
+    date = str(year) + "-" + str(month)
 
     form = DepartmentForm(request.form if request.method == "POST" else None, obj=d)
 
@@ -153,6 +202,10 @@ def edit_department(id):
     return render_template(
         'edit_department.html',
         department=d,
+        page=page,
+        date=date,
+        service_count=service_count,
+        sum_cost=sum_cost,
         form=form
     )
 
@@ -165,6 +218,35 @@ def edit_doctor(id):
         d = db.session.query(Doctor).filter(Doctor.id == id).one_or_none()
         if d is None:
             return 'Not Found', 404
+
+    global per_page
+    per_page = int(request.form.get("items", per_page))
+    page = db.paginate(db.session.query(RenderedService).filter(RenderedService.doctor_id == id)
+                       .order_by(RenderedService.id), per_page=per_page)
+
+    date = request.form.get("date")
+    if date is None:
+        if datetime.now().month == 1:
+            year = datetime.now().year - 1
+            month = 12
+        else:
+            year = datetime.now().year
+            month = datetime.now().month - 1
+    else:
+        datestr = date.split("-")
+        year = int(datestr[0])
+        month = int(datestr[1])
+    service_count = db.session.query(RenderedService.id, func.count(RenderedService.id)) \
+        .filter(RenderedService.doctor_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    sum_cost = db.session.query(RenderedService.id, func.sum(RenderedService.cost)) \
+        .filter(RenderedService.doctor_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    if month < 10:
+        month = "0" + str(month)
+    date = str(year) + "-" + str(month)
 
     form = DoctorForm(request.form if request.method == "POST" else None, obj=d)
 
@@ -187,6 +269,10 @@ def edit_doctor(id):
     return render_template(
         'edit_doctor.html',
         doctor=d,
+        page=page,
+        date=date,
+        service_count=service_count,
+        sum_cost=sum_cost,
         form=form
     )
 
@@ -199,6 +285,35 @@ def edit_patient(id):
         p = db.session.query(Patient).filter(Patient.id == id).one_or_none()
         if p is None:
             return 'Not Found', 404
+
+    global per_page
+    per_page = int(request.form.get("items", per_page))
+    page = db.paginate(db.session.query(RenderedService).filter(RenderedService.patient_id == id)
+                       .order_by(RenderedService.id), per_page=per_page)
+
+    date = request.form.get("date")
+    if date is None:
+        if datetime.now().month == 1:
+            year = datetime.now().year - 1
+            month = 12
+        else:
+            year = datetime.now().year
+            month = datetime.now().month - 1
+    else:
+        datestr = date.split("-")
+        year = int(datestr[0])
+        month = int(datestr[1])
+    service_count = db.session.query(RenderedService.id, func.count(RenderedService.id)) \
+        .filter(RenderedService.patient_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    sum_cost = db.session.query(RenderedService.id, func.sum(RenderedService.cost)) \
+        .filter(RenderedService.patient_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    if month < 10:
+        month = "0" + str(month)
+    date = str(year) + "-" + str(month)
 
     form = PatientForm(request.form if request.method == "POST" else None, obj=p)
 
@@ -219,6 +334,10 @@ def edit_patient(id):
     return render_template(
         'edit_patient.html',
         patient=p,
+        page=page,
+        date=date,
+        service_count=service_count,
+        sum_cost=sum_cost,
         form=form
     )
 
@@ -231,6 +350,35 @@ def edit_price_list(id):
         s = db.session.query(Service).filter(Service.id == id).one_or_none()
         if s is None:
             return 'Not Found', 404
+
+    global per_page
+    per_page = int(request.form.get("items", per_page))
+    page = db.paginate(db.session.query(RenderedService).filter(RenderedService.service_id == id)
+                       .order_by(RenderedService.id), per_page=per_page)
+
+    date = request.form.get("date")
+    if date is None:
+        if datetime.now().month == 1:
+            year = datetime.now().year - 1
+            month = 12
+        else:
+            year = datetime.now().year
+            month = datetime.now().month - 1
+    else:
+        datestr = date.split("-")
+        year = int(datestr[0])
+        month = int(datestr[1])
+    service_count = db.session.query(RenderedService.id, func.count(RenderedService.id)) \
+        .filter(RenderedService.service_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    sum_cost = db.session.query(RenderedService.id, func.sum(RenderedService.cost)) \
+        .filter(RenderedService.service_id == id) \
+        .filter(extract('year', RenderedService.service_date) * 12 + extract('month', RenderedService.service_date)
+                == year * 12 + month).all()[0][1]
+    if month < 10:
+        month = "0" + str(month)
+    date = str(year) + "-" + str(month)
 
     form = PriceListForm(request.form if request.method == "POST" else None, obj=s)
 
@@ -251,6 +399,10 @@ def edit_price_list(id):
     return render_template(
         'edit_price_list.html',
         service=s,
+        page=page,
+        date=date,
+        service_count=service_count,
+        sum_cost=sum_cost,
         form=form
     )
 

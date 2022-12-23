@@ -5,34 +5,40 @@
     <title>Редактирование информации о прейскуранте услуг</title>
 </head>
 <body>
-    {% include '_menu.html' %}
-    <form method="post">
-        <table>
-            <tr>
-                <th>Название услуги</th>
-                <td>{{ form.name }}</td>
-                 <td>
-                    {{ form.name.errors if form.name.errors }}
-                </td>
-            </tr>
-            <tr>
-                <th>Стоимость</th>
-                <td>
-                    {{ form.cost }}
-                </td>
-                <td>
-                    {{ form.cost.errors if form.cost.errors }}
-                </td>
-            </tr>
-            <tr>
-               <td colspan="3">
-                   {{ form.button_save }}
-                   {% if service.id %}
-                   {{ form.button_delete }}
-                   {% endif %}
-               </td>
-            </tr>
-        </table>
-    </form>
+{% include '_menu.html' %}
+<form method="post">
+    <table>
+        <tr>
+            <th>Название услуги</th>
+            <td>{{ form.name }}</td>
+            <td>
+                {{ form.name.errors if form.name.errors }}
+            </td>
+        </tr>
+        <tr>
+            <th>Стоимость</th>
+            <td>
+                {{ form.cost }}
+            </td>
+            <td>
+                {{ form.cost.errors if form.cost.errors }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                {{ form.button_save }}
+                {% if service.id %}
+                    {{ form.button_delete }}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</form>
+{% if service.id %}
+    {% include '_month_statistics.html' %}
+    {% with id=service.id %}
+        {% include "_service_list.html" %}
+    {% endwith %}
+{% endif %}
 </body>
 </html>

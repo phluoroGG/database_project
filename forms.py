@@ -1,6 +1,6 @@
-from wtforms import Form, StringField, SubmitField, TextAreaField, SelectField, HiddenField, IntegerField, DateField
-from wtforms import validators, FormField
-from wtforms_alchemy import ModelForm, ModelFieldList, QuerySelectField, Unique
+from wtforms import StringField, SubmitField, IntegerField, DateField
+from wtforms import validators
+from wtforms_alchemy import ModelForm, QuerySelectField
 
 from model import Department, Doctor, Patient, Service, RenderedService
 

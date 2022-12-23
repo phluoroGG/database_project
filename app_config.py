@@ -4,12 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 
 class Config:
     SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://root:root@localhost/vetrov_k_a?auth_plugin=mysql_native_password"
-    #SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = False # Autocommit
-    SQLALCHEMY_TRACK_MODIFICATIONS = False # ??? Если не прописать, то будет Warning
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'we4fh%gC_za:*8G5v=fbv'
-
-
 
 
 app = Flask(__name__)

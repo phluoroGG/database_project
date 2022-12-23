@@ -5,13 +5,13 @@
     <title>Список отделений</title>
 </head>
 <body>
-    {% include '_menu.html' %}
-    <h1>Список отделений</h1>
-    <ul>
+{% include '_menu.html' %}
+<h1>Список отделений</h1>
+<ul>
     {% for d in departments %}
         <li><a href="{{ url_for('doctor_list', id=d.id) }}">{{ d.name }}</a></li>
     {% endfor %}
-        <li><a href="{{ url_for('doctor_list', id=0) }}">Без отделения</a></li>
-    </ul>
+    <li><a href="{{ url_for('doctor_list', id=0) }}">Без отделения</a></li>
+</ul>
 </body>
 </html>

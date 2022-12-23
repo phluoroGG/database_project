@@ -5,43 +5,49 @@
     <title>Редактирование информации о пациенте</title>
 </head>
 <body>
-    {% include '_menu.html' %}
-    <form method="post">
-        <table>
-            <tr>
-                <th>ФИО</th>
-                <td>{{ form.name }}</td>
-                 <td>
-                    {{ form.name.errors if form.name.errors }}
-                </td>
-            </tr>
-            <tr>
-                <th>Дата рождения</th>
-                <td>
-                    {{ form.birthday }}
-                </td>
-                <td>
-                    {{ form.birthday.errors if form.birthday.errors }}
-                </td>
-            </tr>
-            <tr>
-                <th>Номер телефона</th>
-                <td>
-                    {{ form.phone_number }}
-                </td>
-                <td>
-                    {{ form.phone_number.errors if form.phone_number.errors }}
-                </td>
-            </tr>
-            <tr>
-               <td colspan="3">
-                   {{ form.button_save }}
-                   {% if patient.id %}
-                   {{ form.button_delete }}
-                   {% endif %}
-               </td>
-            </tr>
-        </table>
-    </form>
+{% include '_menu.html' %}
+<form method="post">
+    <table>
+        <tr>
+            <th>ФИО</th>
+            <td>{{ form.name }}</td>
+            <td>
+                {{ form.name.errors if form.name.errors }}
+            </td>
+        </tr>
+        <tr>
+            <th>Дата рождения</th>
+            <td>
+                {{ form.birthday }}
+            </td>
+            <td>
+                {{ form.birthday.errors if form.birthday.errors }}
+            </td>
+        </tr>
+        <tr>
+            <th>Номер телефона</th>
+            <td>
+                {{ form.phone_number }}
+            </td>
+            <td>
+                {{ form.phone_number.errors if form.phone_number.errors }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                {{ form.button_save }}
+                {% if patient.id %}
+                    {{ form.button_delete }}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</form>
+{% if patient.id %}
+    {% include '_month_statistics.html' %}
+    {% with id=patient.id %}
+        {% include "_service_list.html" %}
+    {% endwith %}
+{% endif %}
 </body>
 </html>

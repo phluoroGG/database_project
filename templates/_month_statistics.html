@@ -1,0 +1,13 @@
+<h3>Статистика за месяц</h3>
+<div>
+    <form method="post">
+        <input type="month" name="date" value="{{ date }}">
+        <input type="submit" value="Выбрать">
+    </form>
+</div>
+<div>
+    Оказано услуг за месяц: {{ service_count }}
+</div>
+<div>
+    Общая стоимость услуг за месяц: {{ sum_cost }}
+</div>

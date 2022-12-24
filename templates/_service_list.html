@@ -10,19 +10,22 @@
         </select>
         <input type="submit" value="Выбрать">
     </form>
-
-    {{ page.first }} - {{ page.last }} из {{ page.total }}<br>
+</div>
+<p><span class="link-pages">{{ page.first }} - {{ page.last }} из {{ page.total }}<br></span></p>
+<div class="links">
     {% for page1 in page.iter_pages() %}
         {% if page1 %}
             {% if page1 != page.page1 %}
-                <a href="{{ url_for(request.endpoint, id=id, page=page1) }}">{{ page1 }}</a>
+                <span class="link-pages"><a href="{{ url_for(request.endpoint, id=id, page=page1) }}">{{ page1 }}</a></span>
             {% else %}
                 <strong>{{ page1 }}</strong>
             {% endif %}
         {% else %}
-            …
+            <span class="link-pages">…</span>
         {% endif %}
     {% endfor %}
+</div>
+<div>
     <table>
         <thead>
         <tr>
